@@ -1,0 +1,2 @@
+{"codigo": "String","lote": "String","placa": "String","direccion": "String","municipio": {"type": "ObjectId","ref": "ciudad"},"dispositivo": {"type": "String"},"lat": {"type": "String","default": "0"},"long": {"type": "String","default": "0"},"videos": [{"video": {"type": "ObjectId","ref": "video"}}],"images": [{"image": {"type": "ObjectId","ref": "image"}}],"fecha": {"type": "Date","default": "now"},"user": {"type": "ObjectId","ref": "user"},"estado": {"type": "Number","default": "0"}
+}

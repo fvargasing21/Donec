@@ -1,0 +1,42 @@
+/*{
+	"user":{
+		"username":"fvargas",
+		"email":"okiloco2@gmail.com"
+	},
+	"camera":{
+		"camera_ip":"192.168.1.155",
+		"camera_user":"root",
+		"camera_password":"root"
+	},
+	"movil":{
+		"movil_plate":"AAA",
+		"movil_name":"CARRITO1"
+	},
+	"organismo":"BQA",
+	"camera_id":"CZBQ01",
+	"camera_ip":"192.168.1.155",
+	"camera_user":"root",
+	"camera_password":"root",
+	"re_password":"123",
+	"movil_plate":"AAA",
+	"movil_name":"CARRITO1"
+}*/
+
+Ext.define('Admin.model.preferences.Preferences', {
+    extend: 'Admin.model.Base',
+    fields:[
+        'username',
+        'email',
+        'camera_ip',
+        'camera_user',
+        'camera_password',
+        'movil_plate',
+        'movil_name',
+        'organismo',
+        'camera_id',
+        'camera_user',
+        'camera_password',
+        'movil_name',
+        'movil_plate'
+    ]
+});

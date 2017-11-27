@@ -1,0 +1,78 @@
+{
+  "name": "Donec",
+  "version": "0.1.0",
+  "main": "./main.js",
+  "devDependencies": {
+    "electron":"latest",
+    "electron-builder": "^19.27.3"
+  },
+  "homepage": "./index.html",
+  "dependencies": {
+    "body-parser": "^1.18.1",
+    "buffertools": "~2.1.0",
+    "cors": "^2.8.4",
+    "dateformat": "^3.0.2",
+    "debug": "^3.1.0",
+    "electron-online": "^1.0.0",
+    "express": "^4.15.4",
+    "express-fileupload": "^0.2.0",
+    "express-session": "^1.15.5",
+    "jsonfile": "^4.0.0",
+    "md5": "^2.2.1",
+    "moment-timezone": "^0.5.13",
+    "mongoose": "^4.11.11",
+    "mongoose-timezone": "^1.1.0",
+    "path": "^0.12.7",
+    "pem": "^1.12.3",
+    "pluralize": "^7.0.0",
+    "pluralize-es": "^1.0.0",
+    "remote": "^0.2.6",
+    "request": "^2.81.0",
+    "socket.io": "^2.0.3",
+    "string-capitalize": "^1.0.1"
+  },
+  "scripts": {
+    "start": "electron .",
+    "pack": "build --dir",
+    "dist": "build",
+    "electron": "electron ."
+  },
+  "author": {
+    "name": "Fabian Vargas",
+    "email": "f_varga@hotmail.com"
+  },
+  "repository":{
+    "type": "git",
+    "url": "git://github.com/ingvargasf/Donec.git"
+  },
+  "description": "Donec API",
+  "license": "MIT",
+  "build": {
+    "appId": "Donec-electronv1",
+    "asar": true,
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "NSIS",
+      "icon": "build/icon.ico"
+    }
+  }
+}

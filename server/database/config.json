@@ -1,0 +1,35 @@
+{
+	"active_group":"default",
+	"default":{
+		"dbname":"donec-db",
+		"host":"localhost",
+		"port":"27017"
+	},
+	"debug":{
+		"dbname":"donec-db-dev",
+		"host":"localhost",
+		"port":"27017"
+	},
+	"collections":[
+		{
+			"name":"user", 
+			"config":"{\"username\":\"String\",\"password\":\"String\",\"email\":\"String\", \"usergroup\":{\"type\":\"ObjectId\",\"ref\":\"group\", \"required\":\"true\"},\"persona\":{\"type\":\"ObjectId\",\"ref\":\"persona\"}}",
+			"lang":"en"
+		},
+		{
+			"name":"module", 
+			"config":"{\"name\":\"String\",\"config\":\"String\",\"estado\":{\"type\":\"Boolean\",\"default\":\"true\"}}",
+			"lang":"en"
+		},
+		{
+			"name":"group", 
+			"config":"{\"name\": \"String\",\"config\": {\"name\":\"String\"}, \"modules\":[{\"module\":{\"type\":\"ObjectId\",\"ref\":\"module\"}}]}",
+			"lang":"en"
+		},
+		{
+			"name":"paciente", 
+			"config":"{\"nombre\":\"String\",\"apellido\":\"String\",\"direccion\":\"String\",\"documento\":\"String\",\"localidad\":\"String\",\"provincia\":\"String\",\"fecha_nacimiento\":\"Date\",\"sexo\":\"String\",\"telefono\":\"String\",\"diagnostico\":\"String\",\"fecha_ingreso\":{\"type\":\"Date\",\"default\":\"now\"},\"fecha_alta\":\"Date\",\"estado\":{\"type\":\"Number\",\"default\":\"0\"}}",
+			"lang":"es"
+		}
+	]
+}

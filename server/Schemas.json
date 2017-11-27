@@ -1,0 +1,86 @@
+db.schemas.insert({ "name" : "user", "config" : "{\"username\": \"String\",\"password\": \"String\",\"usergroup\": {\"type\": \"ObjectId\",\"ref\": \"group\",\"modules\":[{\"module\":{\"type\":\"ObjectId\",\"name\":\"String\", \"ref\":\"module\"}}]}}"})
+
+
+Module
+{"name": "String","config": "String","estado": {"type": "Number","default": 1}}
+
+Modulos
+{"title": "PTZ","config": {"className":"Electron.view.ptz.PTZ","alias":"ptz","iconCls":"fa fa-folder"}}
+User
+{"username": "String","password": "String","usergroup": {"type": "ObjectId","ref": "group"}}
+
+Group
+{\"name\":\"String\",\"config\":{\"name\":\"String\"},\"modules\":[{\"module\":{\"type\":\"ObjectId\",\"name\":\"String\", \"ref\":\"module\"}}]}
+{\"name\":\"String\", \"modules\":[{\"type\":\"ObjectId\",\"ref\":\"module\"}]}
+
+User
+{"name":"user","config":{"username":"String","password":"String","usergroup":{"type":"ObjectId","ref":"group"}}}
+
+
+
+/* 1 */
+{
+    "name" : "user",
+    "config" : "{\"username\":\"String\",\"password\":\"String\", \"usergroup\":{\"type\":\"ObjectId\",\"ref\":\"group\"}}",
+    "lang" : "en"
+}
+
+/* 2 */
+{
+    "name" : "module",
+    "config" : "{\"name\":\"String\",\"config\":\"String\",\"estado\":{\"type\":\"Boolean\",\"default\":\"true\"}}",
+    "lang" : "en"
+}
+
+/* 3 */
+{
+    "name" : "group",
+    "config" : "{\"name\": \"String\",\"config\": {\"name\":\"String\"}, \"modules\":[{\"module\":{\"type\":\"ObjectId\",\"ref\":\"module\"}}]}",
+    "lang" : "en"
+}
+
+/* 4 */
+{
+    "name" : "carrito",
+    "config" : "{\"placa\":\"String\",\"codigo\":\"String\",\"timestamps\":{\"createdAt\":\"Date\",\"updatedAt\":\"Date\"}}",
+}
+
+/* 5 */
+{
+    "name" : "ciudad",
+    "config" : "{\"nombre\":\"String\",\"codigo\":\"String\",\"timestamps\":{\"createdAt\":\"Date\",\"updatedAt\":\"Date\"}}",
+    "lang" : "es",
+}
+
+/* 6 */
+{
+    "name" : "organismo",
+    "config" : "{\"nombre\":\"String\",\"codigo\":\"String\",\"ciudad\":{\"ref\":\"ciudad\",\"type\":\"ObjectId\"},\"timestamps\":{\"createdAt\":\"Date\",\"updatedAt\":\"Date\"}}",
+    "lang" : "es",
+}
+
+/* 7 */
+{
+    "name" : "camara",
+    "config" : "{\"codigo\":\"String\",\"address\":\"String\",\"port\":{\"type\":\"String\",\"default\":\"80\"},\"users\":[{\"user\":{\"type\":\"ObjectId\",\"ref\":\"user\"}}],\"resolution\":{\"type\":\"String\",\"default\":\"800x450\"},\"fps\":{\"type\":\"Number\",\"default\":\"25\"},\"audio\":{\"type\":\"Number\",\"default\":\"0\"},\"videocodec\":{\"type\":\"String\",\"default\":\"h264\"},\"estado\":{\"type\":\"Boolean\",\"default\":\"true\"},\"organismo\":{\"type\":\"ObjectId\",\"ref\":\"organismo\"}}",
+}
+
+/* 8 */
+{
+    "name" : "image",
+    "config" : "{\"filename\":\"String\",\"url\":\"String\",\"creator\":{\"ref\":\"user\",\"type\":\"ObjectId\"},\"timestamps\":{\"createdAt\":\"Date\",\"updatedAt\":\"Date\"}}",
+    "lang" : "es",
+}
+
+/* 10 */
+{
+    "name" : "video",
+    "config" : "{\"filename\":\"String\",\"url\":\"String\",\"creator\":{\"ref\":\"user\",\"type\":\"ObjectId\"},\"timestamps\":{\"createdAt\":\"Date\",\"updatedAt\":\"Date\"}}",
+    "lang" : "es",
+}
+/* 11 */
+{
+    "name" : "infraccion",
+    "config" : "{\"codigo\":\"String\",\"lote\":\"String\",\"placa\":\"String\",\"direccion\":\"String\",\"municipio\":{\"type\":\"ObjectId\",\"ref\":\"ciudad\"},\"dispositivo\":{\"type\":\"ObjectId\",\"ref\":\"camara\"},\"lat\":\"String\",\"long\":\"String\",\"videos\":[{\"video\":{\"type\":\"ObjectId\",\"ref\":\"video\"}}],\"images\":[{\"image\":{\"type\":\"ObjectId\",\"ref\":\"image\"}}],\"fecha\":{\"type\":\"Date\",\"default\":\"now\"},\"user\":{\"type\":\"ObjectId\",\"ref\":\"user\"},\"estado\":{\"type\":\"Number\",\"default\":\"0\"}}",
+    "lang" : "es",
+}
