@@ -127,10 +127,10 @@ module.exports = function(app,db,io){
 		}
 		function save(req,res,next){
 			var params = req.body;
-			db[name].create(params,function(doc){
+			db[name].create(params,function(doc,err){
 				console.log("POST: save "+route_name);
 				if(!doc){
-					res.send(JSON.stringify({"success":false,"msg":err}));
+					res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
 				}else{
 					res.send(JSON.stringify({
 						"success":true,
@@ -141,7 +141,7 @@ module.exports = function(app,db,io){
 		}
 		function update(req,res,next){
 			var params = req.body;
-			db[name].create(params,function(doc){
+			db[name].create(params,function(doc,err){
 				console.log("PUT: update "+route_name);
 				if(!doc){
 					res.send(JSON.stringify({"success":false,"msg":err}));

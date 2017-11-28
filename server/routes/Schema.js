@@ -12,9 +12,15 @@ module.exports = function(app,io,db,schema){
 	});
 	app.post("/schemas",function(req,res){
 		var params = req.body;
-		db.schema.create(params,function(doc,model){
+		db.schema.create(params,function(doc,err){
 			var msg = (params.id!=undefined)?"Esquema actualizado.":"Esquema creado con éxito.";
-			res.send(JSON.stringify({"success":true,"msg":msg}));
+
+			if(!doc){
+				res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
+			}else{
+				res.send(JSON.stringify({"success":true,"msg":msg}));
+			}
+
 		});					
 	});
 	app.put("/schemas/:_id",function(req,res){

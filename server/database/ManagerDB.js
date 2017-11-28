@@ -427,7 +427,10 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 					 	var instance = new model(obj_map);//Instancia del Modelo
 				 	 	instance.save(function(err,doc){
 				 	 		if(err){
-				 	 			throw err;
+  					 		 	if(callback!=undefined){
+  					 			 	if(callback!=undefined) callback(doc,err);
+					 		 	}
+				 	 			// throw err;
 				 	 			return;
 				 	 		}
 		 	 		      	if(name=='schema'){
