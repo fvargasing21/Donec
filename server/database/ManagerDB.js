@@ -52,8 +52,8 @@ function ManagerDB(options){
 		self.host = self.active_group.host;
 		self.port = self.active_group.port;
 		self.linkconex = "mongodb://"+self.host+':'+self.port+'/'+self.dbname;
-		//self.linkconex ="mongodb://fvargas:okiloco2!!@cluster0-shard-00-00-qovmr.mongodb.net:27017,cluster0-shard-00-01-qovmr.mongodb.net:27017,cluster0-shard-00-02-qovmr.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin";
 		self.conn = mongoose.connection;
+		// global.Msg("Msg", self.linkconex);
 	}
 	//para emitir eventos ilimitados
 	this.setMaxListeners(0);
@@ -414,7 +414,7 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 						.then(function(obj_map){
 							doc.update(obj_map,doc,function(err,obj_map){
 								if(err) throw err;
-								if(callback!=undefined) callback(doc,err);
+								if(callback!=undefined) callback(err,obj_map);
 							});
 						});
 					});
@@ -426,8 +426,10 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 					.then(function(obj_map){
 					 	var instance = new model(obj_map);//Instancia del Modelo
 				 	 	instance.save(function(err,doc){
-				 	 	
-			
+				 	 		if(err){
+				 	 			throw err;
+				 	 			return;
+				 	 		}
 		 	 		      	if(name=='schema'){
   						 		self.autoRefesh = true;
   						 		self.refresh(function(){
@@ -451,20 +453,19 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 				if(callback!=undefined) callback("No se encontraron parametros de entrada."); 
 			}
 		}	
-		
 		schema.statics.query = function(params,callback){
 			var query = null;
 			if(params._id){
 				query = this.findById(params._id,function(err,doc){
 					if(callback!=undefined) callback(err,query);
-					console.log("query: ",params);
+					console.log("query "+name+":",params);
 					return query;
 				});
 			}else{
 				params = this.getFieldsMap(params);
 				query = this.find(params,function(err,docs){
 					if(callback!=undefined) callback(err,query);
-					console.log("query: ",params);
+					console.log("query "+name+":",params);
 					return query;
 				});
 			}
@@ -590,19 +591,16 @@ ManagerDB.prototype.create = function({name,options},callback){
 ManagerDB.prototype.load =  function(callback) {
 	var self = this;
 	return new Promise(function(resolve,reject){
-		jsonfile.readFile(self.url,function(err,config){
+		
 
-			console.log(self.url);
-			if(!Helper.isEmpty(config)){
-
-				self.setConfig(config);
-				resolve();
-			}else{
-				reject();
-			}
+		Helper.readFile(self.url)
+		.then(function(config){
+			self.setConfig(config);
+			resolve(config);
+		},function(err){
+			console.log("Error al cargar archivo de base de datos.");
+			reject(err);
 			
-			// if(typeof(callback)!=undefined) callback();
-
 		});	
 	});
 }
@@ -672,15 +670,19 @@ ManagerDB.prototype.define =  function() {
 			
 			//Cargar Schemas de la base de Datos y generar Modelos
 			console.log("Cargando Schemas...");
+			// global.Msg("Atención","Cargando Schemas...");
 			model.find(function(e,docs){
 				if(docs.length>0)
 				{
+					// global.Msg("Atención","defineSchemas: "+docs.length);
 					self.defineSchemas(docs)
 					.then(function(){
+						// global.Msg("Atención","END defineSchemas: "+docs.length);
 						self.autoRefesh = true;
 						resolve();
 					});
 				}else{
+					// global.Msg("Atención","defineCoreSchemas");
 					self.defineCoreSchemas()
 					.then(function(){
 						self.autoRefesh = true;
@@ -688,6 +690,10 @@ ManagerDB.prototype.define =  function() {
 					});
 				}
 			});
+		},function(err){
+			// global.Msg("Error","Error al crear esquema");
+			console.log("Error al crear esquema");
+			reject(err);
 		});
 	});
 }
@@ -699,6 +705,7 @@ ManagerDB.prototype.defineCoreSchemas = function(callback){
 	var model = self.getModel("schema");
 		
 	return new Promise(function(resolve,reject){
+
 		self.defineSchemas(schemas)
 		.then(function(){
 			console.log("Se crearon los esquemas del core.");
@@ -712,7 +719,7 @@ ManagerDB.prototype.defineSchemas =  function(schemas) {
 	var count =1;
 	return new Promise(function(resolve,reject){
 
-		schemas.forEach(function (doc,index) {
+		schemas.forEach(function (doc,index,arr) {
 
 			//Registrar los esquemas en collection Schemas
 			self.register(doc.name,doc.config,doc.lang,function(){
@@ -732,7 +739,8 @@ ManagerDB.prototype.defineSchemas =  function(schemas) {
 							sch.emit("define",m);
 						}
 
-						if(count==(schemas.length)){
+						// global.Msg("index: ", index+"="+(arr.length-1));
+						if(index==(arr.length-1)){
 							resolve();
 						}
 						count++;
@@ -789,61 +797,62 @@ ManagerDB.prototype.refresh =  function(refresh, callback) {
 ManagerDB.prototype.connect =  function(callback) {
 	var self = this;
 	return new Promise(function(resolve,reject){
-		self.load()
-		.then(function(data){
 
-			console.log();
+
+		Helper.readFile(self.url)
+		.then(function(config){
+			
+			self.setConfig(config);
+			
 			var state = mongoose.connection.readyState;
+			console.log("Status: ",state);
+			
+			mongoose.connect(self.linkconex,{ useMongoClient: true });
 
-			if(state==0){
-				mongoose.connect(self.linkconex,(err,res)=>{
-					if(err){
-						console.log('Error al conectarse a la base de datos.',err);
-						reject();
-						return;
-					}
-					/**
-					* Definir los schemas de la base de datos
-					*/
-					// return;
-					self.define()
-					.then(function(){
-						console.log("ManagerDB Ready.")
-						self.emit("ready");
-						resolve("Conectado a la base de datos.");
-					},function(){
-						reject("Conectado a la base de datos. No hay esquemas para definir.");
-					});
-				});
-			}else if(state==1){
-				if(callback!=undefined){
-					callback(doc)
-				}
-				resolve("...ya está conectado a la base de datos.");
-			}
-		},function(){
-			console.log("No se pudo cargar la configuración de la base de datos.")
-			reject();
-		});
-	});
-	
-	mongoose.connection.on("connected", function() {
-	    console.log("Connected to " + self.linkconex);
-	});
+			mongoose.connection.once("connected", function() {
+			    /**
+			    * Definir los schemas de la base de datos
+			    */
+			    // return;
+			    // global.Msg("connected", self.linkconex);
+			    self.define()
+			    .then(function(){
+			    	console.log("ManagerDB Ready.")
+			    	self.emit("ready");
+			    	// global.Msg("Wii!!", "Defined Schemas.");
+			    	resolve("Conectado a la base de datos.");
+			    },function(){
+			    	console.log("Conectado a la base de datos. No hay esquemas para definir.")
+			    	reject("Conectado a la base de datos. No hay esquemas para definir.");
+			    	// global.Msg("Error!!", "Conectado a la base de datos. No hay esquemas para definir.");
+			    });
+			    console.log("Connected to " + self.linkconex);
+			});
 
-	mongoose.connection.on("error", function(error) {
-	    console.log("Connection to " + self.linkconex + " failed:" + error);
-	});
+			mongoose.connection.on("error", function(error) {
+			    console.log("Connection to " + self.linkconex + " failed:" + error);
+			    global.socket.emit("mongo-connected",err);
+			    reject(err);
+			    return;
+			});
 
-	mongoose.connection.on("disconnected", function() {
-	    console.log("Disconnected from " + self.linkconex);
-	});
+			mongoose.connection.on("disconnected", function() {
+			    console.log("Disconnected from " + self.linkconex);
+			});
 
-	process.on("SIGINT", function() {
-	    mongoose.connection.close(function() {
-	        console.log("Disconnected from " + self.linkconex + " through app termination");
-	        process.exit(0);
-	    });
+			process.on("SIGINT", function() {
+			    mongoose.connection.close(function() {
+			        console.log("Disconnected from " + self.linkconex + " through app termination");
+			        process.exit(0);
+			    });
+			});
+			
+		},function(err){
+			console.log("Error al cargar archivo de base de datos.");
+			reject(err);
+			
+		});	
+
 	});
 }
 /**

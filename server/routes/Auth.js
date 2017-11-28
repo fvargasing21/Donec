@@ -1,16 +1,10 @@
 var md5 = require("md5");
 var Helper = require("../helpers/helper");
-var path = require("path");
-
+var Constants = require("../helpers/Constants");
+const path = require('path');
 var app_config = path.join(global.APP_PATH,'public','config','app.json');
-//const service = require("../services/index");
-var socket;
+
 module.exports = function(app,io,db){
-
-
-	io.on("connect",function(_socket){
-		socket = _socket;
-	});
 	//Evento Constructor User - Se dispara cuando el Schema user ha sido instanciado.
 	db.on("user",function(schema){
 		//Extendemos la funcionalidad del Schema para usar en el Modelo User.
@@ -28,9 +22,6 @@ module.exports = function(app,io,db){
 					//Si hay datos entra a recorrer
 			        user.usergroup.modules.forEach(function(docs,index,arr){
 			        	db.module.findOne(docs.module,(err,doc)=>{
-			        		if(err){
-			        			throw err;
-			        		}
 			        		user.usergroup.modules[index]=doc;
 			        	});
 			        });
@@ -47,7 +38,7 @@ module.exports = function(app,io,db){
 			app.get("/logout",function(req,res){
 				if(req.session.user_id){
 					req.session.destroy(function(err){
-						if(err){ res.send(err); return false};
+						if(err) { res.send(err); return; }
 						res.send(JSON.stringify({
 							success:true,
 							msg:"Session finalizada."
@@ -95,7 +86,6 @@ module.exports = function(app,io,db){
 	app.post("/install",function(req,res){
 		var params = req.body;
 		function install(params){
-
 			return new Promise(function(resolve,reject){
 				console.log("Crear usuario Super User");
 				if(!params.password || !params.username){
@@ -106,9 +96,9 @@ module.exports = function(app,io,db){
 					return;
 				};
 				db.group.findOne({name:"Super User"},function(err,doc){
-					if(err) { throw err; }
 					if(!doc){
 						console.log("No existe el grupo.")
+						// global.Msg("Atención","No existe el grupo.");
 						db.module.create({
 							config:"{\"title\": \"Usuarios\",\"config\": {\"className\":\"Admin.view.users.Users\",\"alias\":\"users\",\"iconCls\":\"fa fa-folder\"}}",
 							name:"Usuarios"
@@ -126,42 +116,24 @@ module.exports = function(app,io,db){
 
 									var obj = {};
 									obj["user"] = {
-										"username":user.username,
-										"email":user.email
+										"username":params.username,
+										"email":params.email || '',
+										"instaled_at":new Date()
 									}
-									
 									delete params.password;
-									delete params.re_password;
+									delete params.email;
+									delete params.username;
+
 									for(var key in params){
-										if(!(key in obj["user"])){
-											obj[key] = params[key];
-										}
+										obj[key] = params[key];
 									}
-									console.log("se va a setear config: ",obj)
-									Helper.writeFile(app_config,params,{spaces: 2, EOL: '\r\n'})
-									.then(function(err){
-										if(err){
-											res.send(JSON.strinpagify({
-												"success":false,
-												"msg":"Error al Escribir archivo."
-											}));
-											socket.emit("message","Error al Escribir archivo.");
-											console.log("Error al Escribir archivo.");
-											return;
-										}
-										res.send(JSON.stringify({
-											"success":true,
-											"msg":"Usuario creado con éxito.",
-											params
-										}));
-										socket.emit("message","Archivo de configuración creado.");
-										console.log("Archivo de configuración creado.")
-									},function(){
-										res.send(JSON.stringify({
-											"success":false,
-											"msg":"No se pudo crear el archivo de configuración"
-										}));
-										socket.emit("message","No se pudo crear el archivo de configuración");
+									Helper.writeFile(app_config,obj)
+									.then(function(){
+										console.log("Archivo de configuración creado.",obj);
+										resolve(obj);
+									},function(err){
+										reject("No se pudo crear el archivo de configuración.");
+										global.Msg("Error",err);
 										console.log("No se pudo crear el archivo de configuración")
 									});
 									
@@ -169,92 +141,116 @@ module.exports = function(app,io,db){
 							});
 						});
 					}else{
-						res.send(JSON.stringify({
-							"success":true,
-							"msg":"Puede que el Sistema ya está instalado<br>Inicar Sesión como Super Administrador.",
-						}));
+						reject("Puede que el Sistema ya este instalado<br>Inicar Sesión como Super Administrador.")
+						// res.send(JSON.stringify({
+						// 	"success":true,
+						// 	"msg":"Puede que el Sistema ya está instalado<br>Inicar Sesión como Super Administrador.",
+						// }));
 					}
 				});
 			});
 		}
 
 		install(params)
-		.then(function(){
-			console.log("Instalación completada.")
+		.then(function(obj){
+			//Actualizar variables Globales
+			global.config = obj;
+			res.send(JSON.stringify({
+				"success":true,
+				"msg":"Archivo de configuración creado.",
+				"user":obj
+			}));
+		},function(err){
+			// global.Msg("Atención","No se pudo crear el archivo de configuración");
+			res.send(JSON.stringify({
+				"success":false,
+				"msg":err
+			}));
 		});
 	});
 	app.post("/config",function(req,res){
 
 		var params = req.body;
 
-		Helper.readFile(app_config)
-		.then(function(config){
+		Helper.readFile(app_config).
+		then(function(config){
 
 			for(var key in config){
 				if(typeof(config[key])=='object'){
 					for(var s in config[key]){
-						config[key][s] = params[s];
+						if(params[s]!=null){
+							config[key][s] = params[s];
+						}
 					}
 				}else{
-					config[key]=params[key];
+					if(params[s]!=null){
+						config[key]=params[key];
+					}
 				}
 			}
-
-			socket.emit("message","file read ",app_config+JSON.stringify(config));
+			for(var key in params){
+				if(params[s]!=null){
+					config[key] = params[key];
+				}
+			}
+			console.log(config);
 			Helper.writeFile(app_config,config).
-			then(function(config){
+			then(function(){
 				res.send({
 					"success":true,
-					"msg":"Configuración Actualizada.<br>Se debe cerrar la sesión e iniciar nuevamente, para reflejar los cambios.",
-					config
+					"msg":"Configuración Actualizada con éxito.",
+					"config":config
 				});
-				socket.emit("message","file write ",app_config+JSON.stringify(config));
 			},function(err){
-				socket.emit("message","faile to write file ",app_config+":"+err+""+JSON.stringify(config));
 				res.send({
 					"success":false
 				});
 			});
 
-		},function(err){
-			res.send({
-				"success":false,
-				"msg":err
-			});
 		});
 	});
 	app.get("/config",function(req,res){
-
-		/*db.user.listar({},function(docs){
-			if(docs.lenght>0){
-				res.send({
-					"success":(docs.lenght>0),
-					docs
-				});
-			}else{
-				res.send({
-					"success":(docs.lenght>0),
-					"msg":"El aplicativo está listo para ser istalado."
-				});
-			}
-			console.log(docs);
-		})*/
-		
-		Helper.readFile(app_config)
-		.then(function(config){
-			socket.emit("message","file read ",app_config+JSON.stringify(config));
+		Helper.readFile(app_config).
+		then(function(config){
 			res.send({
 				"success":(!Helper.isEmpty(config)),
 				config
 			});
 		},function(err){
-			socket.emit("message","faile to read file ",app_config+JSON.stringify(config));
+			res.send({
+				"success":false
+			});
+		});
+	});
+	app.post("/change_password",function(req,res){
+		var params = req.body;
+
+		console.log(params);
+		db.user.findById(req.session.user_id,function(err,doc){
 			if(err){
 				res.send({
 					"success":false,
-					"msg":"No se pudo cargar el archivo de configuración."
+					"msg":"No exite usuario en la sesión."
 				});
+				return;
 			}
+			if(doc.password!=md5(params.current_password)){
+				res.send({
+					"success":false,
+					"msg":"Contraseña actual invalida."
+				});
+				return;
+			}
+			doc.password = md5(params.password);
+			doc.save(function(err,doc){
+				req.session.destroy(function(err){
+					if(err) { res.send(err); return; }
+					res.send({
+						"success":(!err),
+						"msg":"Contraseña Actualizada."
+					});
+				});
+			});
 		});
 	});
 }

@@ -26,22 +26,5 @@ module.exports = function(app,io,router,db,schema){
 		});
 	}
 
-	/*router.route("/users").post(function(req,res){
-		var params = req.body;
-		console.log("Actualizar grupo");
-		if(params.password!=undefined){
-			params.password=md5(params.password)
-		};
-		db.user.create(params,function(err,doc){
-			if(!doc){
-				res.send(JSON.stringify({"success":false,"msg":err}));
-			}else{
-				res.send(JSON.stringify({
-					"success":true,
-					"msg":(!params.id)?"Usuario creado con éxito.":"Usuario actualizado con éxito."
-				}));
-			}
-		});
-	});*/
 	return router;
 }

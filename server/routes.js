@@ -31,11 +31,13 @@ var path = require("path");
 var Helper = require("./helpers/helper");
 
 module.exports = function(app,db,io){
-	
-	const public_routes =path.join(global.APP_PATH,'server','routes');
+	console.log("\t--->",global.APP_PATH)
+	const public_routes = path.join(global.APP_PATH,'server','routes');
 	const app_routes = path.join(global.APP_PATH,'server','routes','app');
 	var routes_map = {};
 	
+	console.log(public_routes,":",app_routes);
+
 	global.router = router;
 	/**
 	* @loadRoutes: base_path, prefix
@@ -45,24 +47,24 @@ module.exports = function(app,db,io){
 		return new Promise(function(resolve,reject){
 			prefix = prefix || '';
 			function readFiles(base_path,prefix){
-				fs.readdirSync(base_path).forEach(function(file){
-					file = path.join(global.APP_PATH,'server','routes',prefix,file);
-					console.log("file: ",file);
-					var ext = path.extname(file);
-					var route;
-					if(ext!=null && ext=='.js'){
-						var name = path.parse(file).name.toLowerCase();
-						var controllerName=Helper.capitalize(name);
-						var schema;
-						var route_name;
-						
-						if(prefix==''){
-							console.log("Router public: ",name);
-							route = require(file);
-							//Instanciar ruta: publica
-							route(app,io,db,schema);
-						}else{
-							/*Listener para cuando se cree el Schema con el nombre especifico.*/
+				try{
+					fs.readdirSync(base_path).forEach(function(file){
+						file = path.join(global.APP_PATH,'server','routes',prefix,file);
+						var ext = path.extname(file);
+						var route;
+						if(ext!=null && ext=='.js'){
+							var name = path.parse(file).name.toLowerCase();
+							var controllerName=Helper.capitalize(name);
+							var schema;
+							var route_name;
+							
+							if(prefix==''){
+								console.log("Router public: ",name);
+								route = require(file);
+								//Instanciar ruta: publica
+								route(app,io,db,schema);
+							}else{
+								/*Listener para cuando se cree el Schema con el nombre especifico.*/
 								try{	
 									route = require(file);
 									db.on(name,function(schema){
@@ -79,9 +81,14 @@ module.exports = function(app,db,io){
 									reject(err);
 									console.log("No se pudo cargar: ",err);
 								}
+							}
 						}
-					}
-				});
+					});
+				}catch(err){
+					console.log("ERROR: ",err)
+					reject(err);
+					return;
+				}
 			}
 			readFiles(base_path,prefix);
 			resolve();
@@ -110,24 +117,24 @@ module.exports = function(app,db,io){
 				res.send(JSON.stringify({data:docs}));
 			});
 		}
+		
 		function findById(req,res,next){
 			var params = req.params;
 			console.log("GET: findById "+route_name);
 			db[name].search(params,function(err,docs){
 				res.send(JSON.stringify({"success":true,"data":docs}));
-				return false;
 			});
 		}
 		function save(req,res,next){
 			var params = req.body;
 			db[name].create(params,function(doc){
-				console.log("POST: save "+route_name,doc);
+				console.log("POST: save "+route_name);
 				if(!doc){
-					res.send(JSON.stringify({"success":false,"msg":"No se pudo crear el registro."}));
+					res.send(JSON.stringify({"success":false,"msg":err}));
 				}else{
 					res.send(JSON.stringify({
 						"success":true,
-						"msg":(!(params._id || params.id))?"Registro creado con éxito.":"Registro actualizado con éxito."
+						"msg":(!params._id)?"Registro creado con éxito.":"Registro actualizado con éxito."
 					}));
 				}
 			});
@@ -135,20 +142,19 @@ module.exports = function(app,db,io){
 		function update(req,res,next){
 			var params = req.body;
 			db[name].create(params,function(doc){
-				console.log("POST: save "+route_name,doc);
+				console.log("PUT: update "+route_name);
 				if(!doc){
-					res.send(JSON.stringify({"success":false,"msg":"No se pudo crear el registro."}));
+					res.send(JSON.stringify({"success":false,"msg":err}));
 				}else{
 					res.send(JSON.stringify({
 						"success":true,
-						"msg":(!(params._id || params.id))?"Registro creado con éxito.":"Registro actualizado con éxito."
+						"msg":(!params._id)?"Registro creado con éxito.":"Registro actualizado con éxito."
 					}));
 				}
 			});
 		}
 		function remove(req,res,next){
 			var params = req.params;
-			
 			db[name].removeById(params._id,function(msg,doc){
 				console.log("DELETE: remove "+route_name);
 				res.send(JSON.stringify({
@@ -161,7 +167,7 @@ module.exports = function(app,db,io){
 		router.route(route_name).get(list);//Listar y Buscar
 		router.route(route_name).post(save);//crear registro nuevo y actualizar
 		router.route(route_name).put(update);//crear registro nuevo y actualizar
-		router.route(route_name+'/:_id').put(update);//crear registro nuevo y actualizar
+		router.route(route_name+'/:_id').put(update);//busca un registro por Id
 		router.route(route_name+':_id').get(findById);//busca un registro por Id
 		router.route(route_name+'/:_id').get(findById);//busca un registro por Id
 		router.route(route_name+'/:_id').delete(remove);//Eliminar registro por Id

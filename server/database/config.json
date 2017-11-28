@@ -25,11 +25,6 @@
 			"name":"group", 
 			"config":"{\"name\": \"String\",\"config\": {\"name\":\"String\"}, \"modules\":[{\"module\":{\"type\":\"ObjectId\",\"ref\":\"module\"}}]}",
 			"lang":"en"
-		},
-		{
-			"name":"paciente", 
-			"config":"{\"nombre\":\"String\",\"apellido\":\"String\",\"direccion\":\"String\",\"documento\":\"String\",\"localidad\":\"String\",\"provincia\":\"String\",\"fecha_nacimiento\":\"Date\",\"sexo\":\"String\",\"telefono\":\"String\",\"diagnostico\":\"String\",\"fecha_ingreso\":{\"type\":\"Date\",\"default\":\"now\"},\"fecha_alta\":\"Date\",\"estado\":{\"type\":\"Number\",\"default\":\"0\"}}",
-			"lang":"es"
 		}
 	]
 }

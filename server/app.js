@@ -128,8 +128,8 @@ module.exports = function(config){
 		db = ManagerDB.createManagerDB();
 
 		app.use("/public",express.static(path.join(global.APP_PATH,"public")));
-		// app.use("/app",session_middleware);
-		// app.use("/app",online_middleware);
+		app.use("/app",session_middleware);
+
 		var routes = require("./routes");
 		app.use("/app",routes(app,db,io));
 		app.use(function(req, res, next) {
@@ -143,6 +143,7 @@ module.exports = function(config){
 			.then(function(msg){
 				//iniciar utilidades de aplicación
 				init();
+				console.log("Donec is ready http://localhost:"+port);
 				resolve(config);
 			},function(err){
 				reject(err);

@@ -4,7 +4,10 @@ const url = require('url')
 var server = require('./server/app');
 var Constants = require("./server/helpers/Constants.js");
 var Helper = require("./server/helpers/helper");
-var app_config = './server/app.json';
+var app_config = path.join('server','app.json');
+
+global.APP_PATH = __dirname;
+
 function loadConfig(callback){
 	Helper.readFile(app_config)
 	.then(function(obj){
