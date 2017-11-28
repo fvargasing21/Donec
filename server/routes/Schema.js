@@ -13,8 +13,23 @@ module.exports = function(app,io,db,schema){
 	app.post("/schemas",function(req,res){
 		var params = req.body;
 		db.schema.create(params,function(doc,model){
-			res.send(JSON.stringify(doc));
+			var msg = (params.id!=undefined)?"Esquema actualizado.":"Esquema creado con éxito.";
+			res.send(JSON.stringify({"success":true,"msg":msg}));
 		});					
+	});
+	app.put("/schemas/:_id",function(req,res){
+		var params = req.params;
+		db.schema.create(params,function(doc){
+			console.log("PUT: update schemas");
+			if(!doc){
+				res.send(JSON.stringify({"success":false,"msg":err}));
+			}else{
+				res.send(JSON.stringify({
+					"success":true,
+					"msg":(!params._id)?"Registro creado con éxito.":"Registro actualizado con éxito."
+				}));
+			}
+		});			
 	});
 	app.get("/refresh",function(req,res){
 		db.refresh(function(err,schema){
