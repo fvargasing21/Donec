@@ -61,6 +61,7 @@ module.exports = {
 
 		    		//global.socket.emit("message","read file "+file);
 					resolve(obj);
+
 				});
 				console.log("read file: ",file);
 			}catch(err){
@@ -79,7 +80,8 @@ module.exports = {
 		return new Promise(function(resolve,reject){
 			
 			try{
-				jsonfile.writeFile(file,obj,function(err){
+
+				jsonfile.writeFile(file,obj,{spaces: 2, EOL: '\r\n'},function(err){
 					if(err){ reject(err); return;}
 		    		//global.socket.emit("message","El archivo no existe.");
 					console.log("write file:",file);

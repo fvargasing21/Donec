@@ -1,5 +1,7 @@
+var Helper = require("../helpers/helper");
 var md5 = require("md5");
-
+var path = require('path');
+const config_database = path.join(global.APP_PATH,'server','database','config.json');
 module.exports = function(app,io,db,schema){
 
 	db.on("schema",function(schema){
@@ -15,10 +17,49 @@ module.exports = function(app,io,db,schema){
 		db.schema.create(params,function(doc,err){
 			var msg = (params.id!=undefined)?"Esquema actualizado.":"Esquema creado con éxito.";
 
+			if(err){
+				res.send(JSON.stringify({"success":false,"msg":err}));
+				return;
+			}
+
 			if(!doc){
 				res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
 			}else{
-				res.send(JSON.stringify({"success":true,"msg":msg}));
+
+				var _collections=[];
+				Helper.readFile(config_database).
+				then(function(config){
+					config.collections.push(params);
+					console.log(config.collections);
+					_collections = config.collections;
+					// res.send(JSON.stringify({"success":true,"msg":msg}));
+					// config = JSON.stringify(config);
+
+					config.collections.forEach(function(item,index){
+						item.config = JSON.parse(item.config);
+						item.config = JSON.stringify(item.config);
+					});
+
+					Helper.writeFile(config_database,config)
+					.then(function(){
+						console.log("Archivo de configuración actualizado.",config);
+						res.send(JSON.stringify({"success":true,"msg":msg}));
+					},function(err){
+						console.log("No se pudo modificar el archivo de configuración.");
+						res.send(JSON.stringify({"success":false,"msg":"No se pudo modificar el archivo de configuración."}));
+					});
+				},function(err) {
+					res.send(JSON.stringify({"success":false,"msg":err}));
+				});
+				console.log("_collections: ",_collections);
+				/*Helper.writeFile(config_database,config)
+				.then(function(){
+					console.log("Archivo de configuración actualizado.",config);
+					res.send(JSON.stringify({"success":true,"msg":msg}));
+				},function(err){
+					console.log("No se pudo modificar el archivo de configuración.");
+					res.send(JSON.stringify({"success":false,"msg":"No se pudo modificar el archivo de configuración."}));
+				});*/
 			}
 
 		});					

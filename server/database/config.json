@@ -1,30 +1,35 @@
 {
-	"active_group":"default",
-	"default":{
-		"dbname":"donec-db",
-		"host":"localhost",
-		"port":"27017"
-	},
-	"debug":{
-		"dbname":"donec-db-dev",
-		"host":"localhost",
-		"port":"27017"
-	},
-	"collections":[
-		{
-			"name":"user", 
-			"config":"{\"username\":\"String\",\"password\":\"String\",\"email\":\"String\", \"usergroup\":{\"type\":\"ObjectId\",\"ref\":\"group\", \"required\":\"true\"},\"persona\":{\"type\":\"ObjectId\",\"ref\":\"persona\"}}",
-			"lang":"en"
-		},
-		{
-			"name":"module", 
-			"config":"{\"name\":\"String\",\"config\":\"String\",\"estado\":{\"type\":\"Boolean\",\"default\":\"true\"}}",
-			"lang":"en"
-		},
-		{
-			"name":"group", 
-			"config":"{\"name\": \"String\",\"config\": {\"name\":\"String\"}, \"modules\":[{\"module\":{\"type\":\"ObjectId\",\"ref\":\"module\"}}]}",
-			"lang":"en"
-		}
-	]
+  "active_group": "default",
+  "default": {
+    "dbname": "donec-db",
+    "host": "localhost",
+    "port": "27017"
+  },
+  "debug": {
+    "dbname": "donec-db-dev",
+    "host": "localhost",
+    "port": "27017"
+  },
+  "collections": [
+    {
+      "name": "user",
+      "config": "{\"username\":\"String\",\"password\":\"String\",\"email\":\"String\",\"usergroup\":{\"type\":\"ObjectId\",\"ref\":\"group\",\"required\":\"true\"},\"persona\":{\"type\":\"ObjectId\",\"ref\":\"persona\"}}",
+      "lang": "en"
+    },
+    {
+      "name": "module",
+      "config": "{\"name\":\"String\",\"config\":\"String\",\"estado\":{\"type\":\"Boolean\",\"default\":\"true\"}}",
+      "lang": "en"
+    },
+    {
+      "name": "group",
+      "config": "{\"name\":\"String\",\"config\":{\"name\":\"String\"},\"modules\":[{\"module\":{\"type\":\"ObjectId\",\"ref\":\"module\"}}]}",
+      "lang": "en"
+    },
+    {
+      "name": "prueba",
+      "config": "{\"nombre\":\"String\",\"codigo\":\"String\"}",
+      "lang": "es"
+    }
+  ]
 }
