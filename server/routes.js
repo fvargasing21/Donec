@@ -129,6 +129,12 @@ module.exports = function(app,db,io){
 			var params = req.body;
 			db[name].create(params,function(doc,err){
 				console.log("POST: save "+route_name);
+
+				if(err){
+					res.send(JSON.stringify({"success":false,"msg":err._message}));
+					return;
+				};
+
 				if(!doc){
 					res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
 				}else{

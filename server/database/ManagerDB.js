@@ -425,31 +425,49 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 					this.fieldsMap(params)
 					.then(function(obj_map){
 					 	var instance = new model(obj_map);//Instancia del Modelo
-				 	 	instance.save(function(err,doc){
-				 	 		if(err){
-  					 		 	if(callback!=undefined){
-  					 			 	if(callback!=undefined) callback(doc,err);
-					 		 	}
-				 	 			// throw err;
-				 	 			return;
-				 	 		}
-		 	 		      	if(name=='schema'){
-  						 		self.autoRefesh = true;
-  						 		self.refresh(function(){
-  	 								if(callback!=undefined){
-  	 									callback(doc)
-  	 								}
-  	 							});
-  						 	}else{
-  					 		 	if(callback!=undefined){
-  					 			 	if(callback!=undefined) callback(doc,err);
-					 		 	}
-  						 	}
+				 	 	
+				 	 	instance.validate(function(err) {
+				 	 	 	if (err.name == 'ValidationError') {
+				 	 	 		console.log(err);
+					 	 	    if(callback!=undefined){ 
+					 	 	    	callback(null,err);
+						 	 	    return;
+						 	 	}
+					 	 	}else {
+				 	 	        // A general error (db, crypto, etc…)
+		 	 	       	 	    if(callback!=undefined){ 
+		 	 	       	 	    	callback(null,err);
+		 	 	      	 	 	    return;
+		 	 	      	 	 	}
+					 	 	}
+
+				 	 		//Guardar instancia de Modelo
+   					 	 	instance.save(function(err,doc){
+   					 	 		if(err){
+   	  					 		 	if(callback!=undefined){
+   	  					 			 	if(callback!=undefined) callback(doc,err);
+   						 		 	}
+   					 	 			// throw err;
+   					 	 			return;
+   					 	 		}
+   			 	 		      	if(name=='schema'){
+   	  						 		self.autoRefesh = true;
+   	  						 		self.refresh(function(){
+   	  	 								if(callback!=undefined){
+   	  	 									callback(doc)
+   	  	 								}
+   	  	 							});
+   	  						 	}else{
+   	  					 		 	if(callback!=undefined){
+   	  					 			 	if(callback!=undefined) callback(doc,err);
+   						 		 	}
+   	  						 	}
+   					 	 	});  
+				 	 	  	
 				 	 	});
+				 	 	
 					},function(err){
-					 	if(callback!=undefined){
-						 	if(callback!=undefined) callback(err);
-					 	}
+					 	if(callback!=undefined) callback(err);
 					});
 				}
 			}else{
