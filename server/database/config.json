@@ -30,6 +30,11 @@
       "name": "prueba",
       "config": "{\"nombre\":\"String\",\"codigo\":\"String\"}",
       "lang": "es"
+    },
+    {
+      "name": "veausted",
+      "config": "{\"nombre\":\"String\",\"codigo\":\"String\"}",
+      "lang": "es"
     }
   ]
 }

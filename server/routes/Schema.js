@@ -30,11 +30,8 @@ module.exports = function(app,io,db,schema){
 				Helper.readFile(config_database).
 				then(function(config){
 					config.collections.push(params);
-					console.log(config.collections);
-					_collections = config.collections;
-					// res.send(JSON.stringify({"success":true,"msg":msg}));
-					// config = JSON.stringify(config);
-
+					
+					//Controlar escape de comillas
 					config.collections.forEach(function(item,index){
 						item.config = JSON.parse(item.config);
 						item.config = JSON.stringify(item.config);
@@ -51,15 +48,6 @@ module.exports = function(app,io,db,schema){
 				},function(err) {
 					res.send(JSON.stringify({"success":false,"msg":err}));
 				});
-				console.log("_collections: ",_collections);
-				/*Helper.writeFile(config_database,config)
-				.then(function(){
-					console.log("Archivo de configuración actualizado.",config);
-					res.send(JSON.stringify({"success":true,"msg":msg}));
-				},function(err){
-					console.log("No se pudo modificar el archivo de configuración.");
-					res.send(JSON.stringify({"success":false,"msg":"No se pudo modificar el archivo de configuración."}));
-				});*/
 			}
 
 		});					
