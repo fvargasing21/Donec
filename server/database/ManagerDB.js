@@ -427,19 +427,22 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 					 	var instance = new model(obj_map);//Instancia del Modelo
 				 	 	
 				 	 	instance.validate(function(err) {
-				 	 	 	if (err.name == 'ValidationError') {
-				 	 	 		console.log(err);
-					 	 	    if(callback!=undefined){ 
-					 	 	    	callback(null,err);
-						 	 	    return;
+
+				 	 		if(err){
+					 	 	 	if (err.name == 'ValidationError') {
+					 	 	 		console.log(err);
+						 	 	    if(callback!=undefined){ 
+						 	 	    	callback(null,err);
+							 	 	    return;
+							 	 	}
+						 	 	}else {
+					 	 	        // A general error (db, crypto, etc…)
+			 	 	       	 	    if(callback!=undefined){ 
+			 	 	       	 	    	callback(null,err);
+			 	 	      	 	 	    return;
+			 	 	      	 	 	}
 						 	 	}
-					 	 	}else {
-				 	 	        // A general error (db, crypto, etc…)
-		 	 	       	 	    if(callback!=undefined){ 
-		 	 	       	 	    	callback(null,err);
-		 	 	      	 	 	    return;
-		 	 	      	 	 	}
-					 	 	}
+						 	}
 
 				 	 		//Guardar instancia de Modelo
    					 	 	instance.save(function(err,doc){
