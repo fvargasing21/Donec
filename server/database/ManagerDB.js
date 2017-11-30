@@ -400,6 +400,9 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 		schema.statics.create = function(params,callback){
 			var me = this;
 			if(!Helper.isEmpty(params)){
+				params.id = params.id || params._id;
+
+				console.log("params.id::",params.id);
 				if(params.id){
 					this.findById(params.id,function(err,doc){
 						//doc - Representa una instancia del mondelo mongoose.
@@ -414,7 +417,7 @@ ManagerDB.prototype.createSchema = function(name, options,lang,callback){
 						.then(function(obj_map){
 							doc.update(obj_map,doc,function(err,obj_map){
 								if(err) throw err;
-								if(callback!=undefined) callback(err,obj_map);
+								if(callback!=undefined) callback(err,doc);
 							});
 						});
 					});

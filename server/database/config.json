@@ -35,6 +35,11 @@
       "name": "veausted",
       "config": "{\"nombre\":\"String\",\"codigo\":\"String\"}",
       "lang": "es"
+    },
+    {
+      "name": "producto",
+      "config": "{\"nombre\":\"String\",\"codigo\":\"Number\"}",
+      "lang": "es"
     }
   ]
 }

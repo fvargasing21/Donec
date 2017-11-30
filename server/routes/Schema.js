@@ -18,7 +18,7 @@ module.exports = function(app,io,db,schema){
 			var msg = (params.id!=undefined)?"Esquema actualizado.":"Esquema creado con éxito.";
 
 			if(err){
-				res.send(JSON.stringify({"success":false,"msg":err}));
+				res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
 				return;
 			}
 
@@ -26,15 +26,13 @@ module.exports = function(app,io,db,schema){
 				res.send(JSON.stringify({"success":false,"msg":err.errmsg}));
 			}else{
 
-				var _collections=[];
 				Helper.readFile(config_database).
 				then(function(config){
 					config.collections.push(params);
 					
 					//Controlar escape de comillas
 					config.collections.forEach(function(item,index){
-						item.config = JSON.parse(item.config);
-						item.config = JSON.stringify(item.config);
+						item.config = JSON.stringify(JSON.parse(item.config));
 					});
 
 					Helper.writeFile(config_database,config)
@@ -49,20 +47,50 @@ module.exports = function(app,io,db,schema){
 					res.send(JSON.stringify({"success":false,"msg":err}));
 				});
 			}
-
 		});					
 	});
 	app.put("/schemas/:_id",function(req,res){
-		var params = req.params;
-		db.schema.create(params,function(doc){
-			console.log("PUT: update schemas");
+		var params = req.body;
+		params["_id"] = req.params._id;
+		
+		db.schema.create(params,function(err,doc){
+			console.log("PUT: update schemas",err);
+			if(err){
+				res.send(JSON.stringify({"success":false,"msg":err}));
+				return;
+			}
 			if(!doc){
 				res.send(JSON.stringify({"success":false,"msg":err}));
 			}else{
-				res.send(JSON.stringify({
-					"success":true,
-					"msg":(!params._id)?"Registro creado con éxito.":"Registro actualizado con éxito."
-				}));
+
+				var msg = (!params._id)?"Registro creado con éxito.":"Registro actualizado con éxito.";
+				Helper.readFile(config_database).
+				then(function(config){
+					
+					config.collections.forEach(function(item,index){
+						console.log("Name: ",doc.name,item.name);
+						if(item.name==doc.name){
+							
+							config.collections[index] = {
+								"name":doc.name,
+								"config":doc.config,
+								"lang":doc.lang
+							};
+
+							Helper.writeFile(config_database,config)
+							.then(function(){
+								console.log("Archivo de configuración actualizado.",config);
+								res.send(JSON.stringify({"success":true,"msg":msg}));
+							},function(err){
+								console.log("No se pudo modificar el archivo de configuración.");
+								res.send(JSON.stringify({"success":false,"msg":"No se pudo modificar el archivo de configuración."}));
+							});
+							return;
+						}
+					});
+				},function(err) {
+					res.send(JSON.stringify({"success":false,"msg":err}));
+				});
 			}
 		});			
 	});

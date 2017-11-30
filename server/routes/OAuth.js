@@ -83,6 +83,35 @@ module.exports = function(app,io,db){
 			
 		});
 	});
+	app.post("/login",function(req,res){
+		var params = req.body;
+		if(!db.user){
+			res.send(JSON.stringify({
+				success:false,
+				msg:'No se ha creado el esquema user <br>Contacte con el administrador.'
+			}));
+		}else{
+			//Llamar funcion login del Modelo user
+			db.user.login({"username":params.username,"password":md5(params.password)})
+			.then(function(user){
+
+				//console.log(req.session.secret);
+				//var token = service(user,req.session.secret);
+				req.session.user_id =user._id;
+				res.locals.user = user;
+
+				global.user = user;
+				
+				res.send(JSON.stringify({
+					"user":user,
+					// "token":token,
+					"success":true
+				}));
+			}).catch((err)=>{
+	            res.send(JSON.stringify({"msg":err,"success":false}));
+	        });
+		};
+	});
 	app.post("/install",function(req,res){
 		var params = req.body;
 		function install(params){
